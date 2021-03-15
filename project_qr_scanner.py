@@ -10,6 +10,7 @@ import sys
 import traceback
 import json
 import usb.core
+import time
 
 from barcode import Code128
 from barcode.writer import ImageWriter
@@ -80,7 +81,7 @@ class QImageViewer(QMainWindow):
         self.separatorLine.setMidLineWidth(10)
 
         # device counter
-        self.deviceCounter = len(list(usb.core.find(find_all=True, idVendor=1133, idProduct=1555)))
+        #self.deviceCounter = len(list(usb.core.find(find_all=True, idVendor=1133, idProduct=1555)))
         
         # product Counter lable
         self.counterLabel = QLabel()
@@ -241,10 +242,12 @@ class QImageViewer(QMainWindow):
 
     def print_output(self, s):
         if s != True:
-            self.errorlabel.setText(f"Error:{s}")
+            self.errorlabel.setText(f"Error:Server is not responding")
+            #self.errorlabel.setText(f"Error:{s}")
         
     def thread_complete(self):
-        print(self.printerLabel)
+        self.printerLabel = "AABBCCDDEEFFGG"
+        
         if self.printerLabel:
             with open("somefile.jpg", "wb")as f:
                 Code128(self.printerLabel, writer=ImageWriter()).write(f)
@@ -258,6 +261,7 @@ class QImageViewer(QMainWindow):
             painter.drawPixmap(10, 10, self.label.pixmap())
             painter.end()
             self.printerLabel = ""
+        time.sleep(3)
         self.spinner.stop()
         self.counterLabel.setText("0")
         self.listWidget.clear()
