@@ -1,8 +1,7 @@
 import time
 from PyQt5.QtCore import (Qt,QObject, QRect, pyqtSlot, pyqtSignal, QThreadPool, QRunnable, QTimer)
-from PyQt5.QtGui import (QIcon,QPainter,QPixmap, QImage)
-from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
-from PyQt5.QtWidgets import  (QLabel, QSizePolicy, QMessageBox, QMainWindow, QLineEdit, QFrame, QGroupBox)
+from PyQt5.QtGui import (QIcon,QPainter,QPixmap)
+from PyQt5.QtWidgets import  (QLabel, QSizePolicy,QMainWindow, QLineEdit, QFrame, QGroupBox)
 from PyQt5 import QtWidgets,QtCore, QtCore, QtWidgets,QtPrintSupport
 
 from waitingspinnerwidget import QtWaitingSpinner
@@ -12,11 +11,8 @@ import traceback
 import json
 import usb.core
 
-from barcode import EAN13, Code128
+from barcode import Code128
 from barcode.writer import ImageWriter
-from io import BytesIO
-import barcode
-
 
 class WorkerSignals(QObject):
     finished = pyqtSignal()
@@ -52,23 +48,28 @@ class QImageViewer(QMainWindow):
     def __init__(self):
         super().__init__()
         
+        # variables
         self.con_key = 'asdsdgfgasrrtg'
         self.panel_id = ''
+        self.counter = 0
+        self.maxCounter = 6
+        self.memory = []
+        self.printerLabel = ""
+
+        # QtThread
         self.threadpool = QThreadPool()
         self.spinner = QtWaitingSpinner(self)
-        self.printerLabel = ""
 
         self.label = QLabel(self)
         
-
         self.main_widget = QtWidgets.QWidget(self)
         self.main_widget.setFocus()
         self.setCentralWidget(self.main_widget)
 
+        # vertical separator lin
         self.separatorLine = QFrame()
         self.separatorLine.setFrameShape( QFrame.VLine )
         self.separatorLine.setFrameShadow( QFrame.Raised )
-
         self.separatorLine.setLineWidth(50)
         self.separatorLine.setMidLineWidth(5)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
@@ -78,10 +79,10 @@ class QImageViewer(QMainWindow):
         self.separatorLine.setLineWidth(0)
         self.separatorLine.setMidLineWidth(10)
 
+        # device counter
         self.deviceCounter = len(list(usb.core.find(find_all=True, idVendor=1133, idProduct=1555)))
-        self.counter = 0
-        self.maxCounter = 6
-        self.memory = []
+        
+        # product Counter lable
         self.counterLabel = QLabel()
         self.counterLabel.setAlignment(Qt.AlignCenter)
         self.counterLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
@@ -95,16 +96,19 @@ class QImageViewer(QMainWindow):
             }
         ''')
 
+        # Serial number list
         self.listWidget = QtWidgets.QListWidget()
         self.listWidget.setStyleSheet('border:0px;font-size:28px;margin: 35px;background-color:#efefef;color:black;')
         self.listWidget.setDisabled(True)
 
-        self.groupBox3 = QGroupBox("EXTRA INFO")
+        
         self.lineEdit = QLineEdit()
         self.lineEdit.setStyleSheet('background-color: rgba(10, 0, 0, 0); color: rgba(10, 0, 0, 0); border:0px;')
         self.lineEdit.setFrame(False)
         self.lineEdit.textChanged.connect(self.sync_lineEdit)
+        
         self.anytext = QtWidgets.QLabel("")
+        
         self.combo = QtWidgets.QComboBox()
         self.combo.addItems(["6","8","10","12"])
         self.combo.setCurrentText(str(self.maxCounter))
@@ -115,10 +119,7 @@ class QImageViewer(QMainWindow):
         self.comth = [6,8,10,12]
         self.comth2 = [6,8,10,12]
         self.combo.activated.connect(self.setdatastrength)
-        self.scannerLayout = QtWidgets.QVBoxLayout() 
-        self.scannerLayout.addWidget(self.combo,3)
-        self.scannerLayout.addWidget(self.lineEdit)
-
+        
         self.btn1 = QtWidgets.QPushButton()
         self.btn1.setStyleSheet('margin-left:60px; padding: 20px')
         self.btn1.setFixedSize(70,70)
@@ -133,9 +134,15 @@ class QImageViewer(QMainWindow):
         self.btn2.setIconSize(self.btn2.size())
         self.btn2.setFlat(True)
         
-        self.scannerLayout.addWidget(self.btn2,5)
-        self.scannerLayout.addWidget(self.btn1,5)
+        # self.scannerLayout.addWidget(self.btn2,5)
+        # self.scannerLayout.addWidget(self.btn1,5)
+
+        self.scannerLayout = QtWidgets.QVBoxLayout() 
+        self.scannerLayout.addWidget(self.combo,3)
+        self.scannerLayout.addWidget(self.lineEdit)
         self.scannerLayout.addWidget(self.anytext)
+
+        self.groupBox3 = QGroupBox("EXTRA INFO")
         self.groupBox3.setLayout(self.scannerLayout)
         self.groupBox3.setStyleSheet('background-color:#eaff80;')
 
@@ -167,7 +174,6 @@ class QImageViewer(QMainWindow):
         vh2.setSpacing(0)
         vh2.addWidget(self.errorlabel)
 
-
         h1 = QtWidgets.QHBoxLayout() 
         h1.setSpacing(0)
         h1.addLayout(vh1,3)
@@ -180,24 +186,20 @@ class QImageViewer(QMainWindow):
         v13.addWidget(self.listWidget)
         v13.addWidget(self.spinner)
         
-
         v1 = QtWidgets.QHBoxLayout()
         v1.setSpacing(0)
         v1.addLayout(v12,6)
         v1.addWidget(self.separatorLine)
         v1.addLayout(v13,4)
         
-
         v2 = QtWidgets.QVBoxLayout() 
         v2.setSpacing(0)
         v2.addWidget(self.groupBox3)
-
 
         h2 = QtWidgets.QHBoxLayout()
         h2.setSpacing(0)
         h2.addLayout(v1, 12)
         h2.addLayout(v2, 1)
-              
         
         l = QtWidgets.QVBoxLayout(self.main_widget)
         l.setSpacing(0)
@@ -205,13 +207,12 @@ class QImageViewer(QMainWindow):
         l.addLayout(h1, 1)     
         l.addLayout(h2, 15)   
         
-
         self.setWindowTitle("AROQ")
         self.setGeometry(QRect(400, 100, 1200, 800))
         self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         #self.setCursor(Qt.BlankCursor)
-        #self.showMaximized() 
-        #self.showFullScreen()
+        self.showMaximized() 
+        self.showFullScreen()
         self.starter()
         self.timer = QTimer()
         self.timer.setInterval(2000)
@@ -293,7 +294,7 @@ class QImageViewer(QMainWindow):
             return e
 
     def starter(self):
-        starter_url = f'http://10.35.84.155:8080/api-panel/panels/?con_key={self.con_key}'
+        starter_url = f'http://127.0.0.1:8080/api-panel/panels/?con_key={self.con_key}'
         headers = {
             'Content-Type': 'application/json',
         }
