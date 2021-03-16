@@ -246,8 +246,8 @@ class QImageViewer(QMainWindow):
             #self.errorlabel.setText(f"Error:{s}")
         
     def thread_complete(self):
-        self.printerLabel = "AABBCCDDEEFFGG"
-        
+        #self.printerLabel = "AABBCCDDEEFFGG"
+        #time.sleep(2)
         if self.printerLabel:
             with open("somefile.jpg", "wb")as f:
                 Code128(self.printerLabel, writer=ImageWriter()).write(f)
@@ -261,7 +261,6 @@ class QImageViewer(QMainWindow):
             painter.drawPixmap(10, 10, self.label.pixmap())
             painter.end()
             self.printerLabel = ""
-        time.sleep(3)
         self.spinner.stop()
         self.counterLabel.setText("0")
         self.listWidget.clear()
@@ -274,7 +273,7 @@ class QImageViewer(QMainWindow):
         ''')
 
     def reload(self):
-        reload_url = 'http://10.35.84.155:8080/api-container/containers/'
+        reload_url = 'http://127.0.0.1:8080/api-container/containers/'
         headers = {
             'Content-Type': 'application/json',
         }
