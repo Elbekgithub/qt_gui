@@ -246,8 +246,8 @@ class QImageViewer(QMainWindow):
             #self.errorlabel.setText(f"Error:{s}")
         
     def thread_complete(self):
-        #self.printerLabel = "AABBCCDDEEFFGG"
-        #time.sleep(2)
+        self.printerLabel = "AABBCCDDEEFFGG"
+        time.sleep(2)
         if self.printerLabel:
             with open("somefile.jpg", "wb")as f:
                 Code128(self.printerLabel, writer=ImageWriter()).write(f)
@@ -302,10 +302,6 @@ class QImageViewer(QMainWindow):
             'Content-Type': 'application/json',
         }
         auth = ('admin', 'admin2020')
-        data = {
-            'data': ['ss']
-        }
-        data = json.dumps(data)
         self.memory = []
         try:
             r = requests.get(starter_url, auth=requests.auth.HTTPBasicAuth(*auth), headers=headers)
