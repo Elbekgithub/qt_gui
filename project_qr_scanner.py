@@ -5,12 +5,9 @@ from PyQt5.QtWidgets import  (QLabel, QSizePolicy,QMainWindow, QLineEdit, QFrame
 from PyQt5 import QtWidgets,QtCore, QtCore, QtWidgets,QtPrintSupport
 
 from waitingspinnerwidget import QtWaitingSpinner
-import requests
-import sys
-import traceback
-import json
+
+import traceback,sys, json, requests, time
 import usb.core
-import time
 
 from barcode import Code128
 from barcode.writer import ImageWriter
@@ -32,9 +29,7 @@ class Worker(QRunnable):
     @pyqtSlot()
     def run(self):
         try:
-            result = self.func(
-                *self.args, **self.kwargs
-            )
+            result = self.func(*self.args, **self.kwargs)
         except:
             traceback.print_exc()
             exctype, value = sys.exc_info()[:2]
@@ -45,7 +40,7 @@ class Worker(QRunnable):
             self.signals.finished.emit()
 
 class QImageViewer(QMainWindow):
-    sendMessageSignal = QtCore.pyqtSignal(dict)
+    #sendMessageSignal = QtCore.pyqtSignal(dict)
     def __init__(self):
         super().__init__()
         
@@ -99,7 +94,7 @@ class QImageViewer(QMainWindow):
 
         # Serial number list
         self.listWidget = QtWidgets.QListWidget()
-        self.listWidget.setStyleSheet('border:0px;font-size:28px;margin: 35px;background-color:#efefef;color:black;')
+        self.listWidget.setStyleSheet('border:0px;font-size:18px;margin: 35px;background-color:#efefef;color:black;')
         self.listWidget.setDisabled(True)
 
         
@@ -111,14 +106,14 @@ class QImageViewer(QMainWindow):
         self.anytext = QtWidgets.QLabel("")
         
         self.combo = QtWidgets.QComboBox()
-        self.combo.addItems(["6","8","10","12"])
+        self.combo.addItems(["6","8","10","12","14","20","22","24","26","28","30"])
         self.combo.setCurrentText(str(self.maxCounter))
         self.combo.setStyleSheet('''
             height:40px;
             font-size:20px
             ''')
-        self.comth = [6,8,10,12]
-        self.comth2 = [6,8,10,12]
+        self.comth = [6,8,10,12,14,16,18,20,22,24,26,28,30]
+        self.comth2 = [6,8,10,12,14,16,18,20,22,24,26,28,30]
         self.combo.activated.connect(self.setdatastrength)
         
         self.btn1 = QtWidgets.QPushButton()
@@ -211,7 +206,7 @@ class QImageViewer(QMainWindow):
         self.setWindowTitle("AROQ")
         self.setGeometry(QRect(400, 100, 1200, 800))
         self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
-        #self.setCursor(Qt.BlankCursor)
+        self.setCursor(Qt.BlankCursor)
         self.showMaximized() 
         self.showFullScreen()
         self.starter()
@@ -247,7 +242,6 @@ class QImageViewer(QMainWindow):
         
     def thread_complete(self):
         self.printerLabel = "AABBCCDDEEFFGG"
-        time.sleep(2)
         if self.printerLabel:
             with open("somefile.jpg", "wb")as f:
                 Code128(self.printerLabel, writer=ImageWriter()).write(f)
@@ -271,7 +265,7 @@ class QImageViewer(QMainWindow):
                 font-size: 400px;
             }
         ''')
-
+    
     def reload(self):
         reload_url = 'http://127.0.0.1:8080/api-container/containers/'
         headers = {
@@ -285,10 +279,10 @@ class QImageViewer(QMainWindow):
         }
         data = json.dumps(data)
         self.memory = []
+        time.sleep(2)
         try:
             r = requests.post(reload_url, data=data, auth=requests.auth.HTTPBasicAuth(*auth), headers=headers)
             if r.status_code == 201:
-                time.sleep(3)
                 self.printerLabel = r.json()['serial_name']
                 return True
             else:
@@ -373,10 +367,10 @@ class QImageViewer(QMainWindow):
                 self.comth2 = self.comth
                 self.combo.setCurrentText(str(self.maxCounter))
                 self.counter = 0
-                self.worker = Worker(self.reload) 
-                self.worker.signals.result.connect(self.print_output)
-                self.worker.signals.finished.connect(self.thread_complete)
-                self.threadpool.start(self.worker)
+                worker = Worker(self.reload) 
+                worker.signals.result.connect(self.print_output)
+                worker.signals.finished.connect(self.thread_complete)
+                self.threadpool.start(worker)
         
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
