@@ -241,20 +241,20 @@ class QImageViewer(QMainWindow):
             #self.errorlabel.setText(f"Error:{s}")
         
     def thread_complete(self):
-        self.printerLabel = "AABBCCDDEEFFGG"
-        if self.printerLabel:
-            with open("somefile.jpg", "wb")as f:
-                Code128(self.printerLabel, writer=ImageWriter()).write(f)
-            
-            pixmap = QPixmap('somefile.jpg')
-            self.label.setPixmap(pixmap)
-            printer = QtPrintSupport.QPrinter()
-            painter = QPainter()
-            painter.begin(printer)
-        
-            painter.drawPixmap(10, 10, self.label.pixmap())
-            painter.end()
-            self.printerLabel = ""
+        if not self.printerLabel:
+            self.printerLabel = "AABBCCDDEEFFGG"
+
+        with open("somefile.jpg", "wb")as f:
+            Code128(self.printerLabel, writer=ImageWriter()).write(f)
+        pixmap = QPixmap('somefile.jpg')
+        self.label.setPixmap(pixmap)
+        printer = QtPrintSupport.QPrinter()
+        painter = QPainter()
+        painter.begin(printer)
+    
+        painter.drawPixmap(10, 10, self.label.pixmap())
+        painter.end()
+        self.printerLabel = ""
         self.spinner.stop()
         self.counterLabel.setText("0")
         self.listWidget.clear()
