@@ -291,7 +291,7 @@ class QImageViewer(QMainWindow):
         printer = QtPrintSupport.QPrinter()
         painter = QPainter()
         painter.begin(printer)
-        rect = QRect(0, 0, pixmap.width()/2, pixmap.height()/2)
+        rect = QRect(250, 380, pixmap.width()/2, pixmap.height()/2)
         painter.drawPixmap(rect, pixmap)
         painter.end()
         self.printerLabel = ""
