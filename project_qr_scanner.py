@@ -23,7 +23,7 @@ from PyQt5 import QtWidgets, QtCore, QtCore, QtWidgets, QtPrintSupport
 
 from waitingspinnerwidget import QtWaitingSpinner
 
-import traceback, sys, json, requests, time
+import traceback, sys, json, requests, time, cups, os
 #import usb.core
 
 from barcode import Code128
@@ -75,8 +75,6 @@ class QImageViewer(QMainWindow):
         # QtThread
         self.threadpool = QThreadPool()
         self.spinner = QtWaitingSpinner(self)
-
-        self.label = QLabel(self)
 
         self.main_widget = QtWidgets.QWidget(self)
         self.main_widget.setFocus()
@@ -149,19 +147,19 @@ class QImageViewer(QMainWindow):
         self.comth2 = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30]
         self.combo.activated.connect(self.setdatastrength)
 
-        self.btn1 = QtWidgets.QPushButton()
-        self.btn1.setStyleSheet("margin-left:60px; padding: 20px")
-        self.btn1.setFixedSize(70, 70)
-        self.btn1.setIcon(QIcon("scanner.png"))
-        self.btn1.setIconSize(self.btn1.size())
-        self.btn1.setFlat(True)
+        # self.btn1 = QtWidgets.QPushButton()
+        # self.btn1.setStyleSheet("margin-left:60px; padding: 20px")
+        # self.btn1.setFixedSize(70, 70)
+        # self.btn1.setIcon(QIcon("scanner.png"))
+        # self.btn1.setIconSize(self.btn1.size())
+        # self.btn1.setFlat(True)
 
-        self.btn2 = QtWidgets.QPushButton()
-        self.btn2.setStyleSheet("margin-left:60px;")
-        self.btn2.setFixedSize(70, 70)
-        self.btn2.setIcon(QIcon("scanner.png"))
-        self.btn2.setIconSize(self.btn2.size())
-        self.btn2.setFlat(True)
+        # self.btn2 = QtWidgets.QPushButton()
+        # self.btn2.setStyleSheet("margin-left:60px;")
+        # self.btn2.setFixedSize(70, 70)
+        # self.btn2.setIcon(QIcon("scanner.png"))
+        # self.btn2.setIconSize(self.btn2.size())
+        # self.btn2.setFlat(True)
 
         # self.scannerLayout.addWidget(self.btn2,5)
         # self.scannerLayout.addWidget(self.btn1,5)
@@ -246,7 +244,7 @@ class QImageViewer(QMainWindow):
         self.setWindowTitle("AROQ")
         self.setGeometry(QRect(400, 100, 1200, 800))
         self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
-        self.setCursor(Qt.BlankCursor)
+        # self.setCursor(Qt.BlankCursor)
         self.showMaximized()
         self.showFullScreen()
         self.starter()
@@ -284,16 +282,13 @@ class QImageViewer(QMainWindow):
         if not self.printerLabel:
             self.printerLabel = "AABBCCDDEEFFGG"
 
-        with open("somefile.jpg", "wb") as f:
+        filename = os.path.abspath(os.path.realpath('somefile.jpg'))
+        with open(filename, "wb") as f:
             Code128(self.printerLabel, writer=ImageWriter()).write(f)
-        pixmap = QPixmap("somefile.jpg")
-        self.label.setPixmap(pixmap)
-        printer = QtPrintSupport.QPrinter()
-        painter = QPainter()
-        painter.begin(printer)
-        rect = QRect(250, 380, pixmap.width()/2, pixmap.height()/2)
-        painter.drawPixmap(rect, pixmap)
-        painter.end()
+        conn = cups.Connection()
+        def_print = conn.getDefault()
+        filename = os.path.abspath(os.path.realpath('somefile.jpg'))
+        conn.printFile(def_print, filename, "Project Report", {})
         self.printerLabel = ""
         self.spinner.stop()
         self.counterLabel.setText("0")
