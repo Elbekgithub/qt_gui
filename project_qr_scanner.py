@@ -23,7 +23,7 @@ from PyQt5 import QtWidgets, QtCore, QtCore, QtWidgets, QtPrintSupport
 
 from waitingspinnerwidget import QtWaitingSpinner
 
-import traceback, sys, json, requests, time, cups, os
+import traceback, sys, json, requests, time, cups, os, pyqrcode
 #import usb.core
 
 from barcode import Code128
@@ -282,13 +282,17 @@ class QImageViewer(QMainWindow):
         if not self.printerLabel:
             self.printerLabel = "AABBCCDDEEFFGG"
 
-        filename = os.path.abspath(os.path.realpath('somefile.jpg'))
-        with open(filename, "wb") as f:
-            Code128(self.printerLabel, writer=ImageWriter()).write(f)
+        # filename = os.path.abspath(os.path.realpath('somefile.jpg'))
+        # with open(filename, "wb") as f:
+        #     Code128(self.printerLabel, writer=ImageWriter()).write(f)
+        qr = pyqrcode.create(self.printerLabel)
+        qr.png('qrcode.png', scale=10)
+        filename = os.path.abspath(os.path.realpath('qrcode.png'))
         conn = cups.Connection()
         def_print = conn.getDefault()
         filename = os.path.abspath(os.path.realpath('somefile.jpg'))
         conn.printFile(def_print, filename, "Project Report", {})
+        
         self.printerLabel = ""
         self.spinner.stop()
         self.counterLabel.setText("0")

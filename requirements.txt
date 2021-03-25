@@ -1,6 +1,7 @@
 altgraph==0.17
 certifi==2020.12.5
 chardet==4.0.0
+cups==0.0.6
 fbs==0.9.1
 future==0.18.2
 idna==2.10
@@ -10,12 +11,13 @@ Pillow==8.1.0
 pycparser==2.20
 PyInstaller==3.4
 pypng==0.0.20
+PyQRCode==1.2.1
 PyQt5==5.15.2
 PyQt5-sip==12.8.1
 pyserial==3.5
 python-barcode==0.13.1
 pyusb==1.1.1
+pywin32-ctypes==0.2.0
 requests==2.25.1
 six==1.15.0
 urllib3==1.26.3
-
