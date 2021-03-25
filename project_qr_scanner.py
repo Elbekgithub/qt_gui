@@ -287,7 +287,6 @@ class QImageViewer(QMainWindow):
         #     Code128(self.printerLabel, writer=ImageWriter()).write(f)
         qr = pyqrcode.create(self.printerLabel)
         qr.png('qrcode.png', scale=10)
-        filename = os.path.abspath(os.path.realpath('qrcode.png'))
         conn = cups.Connection()
         def_print = conn.getDefault()
         filename = os.path.abspath(os.path.realpath('somefile.jpg'))
